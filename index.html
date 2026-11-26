@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Healing Pod Dashboard</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--tx:#1b2733;--mu:#6b7a8a;--ac:#2f7de1;--ok:#1f9d63;--wr:#d9822b;--er:#d64545;--bd:#e1e8f0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--tx:#e8eef4;--mu:#8fa0b1;--ac:#5aa0f5;--ok:#3cc088;--wr:#eba04f;--er:#f06b6b;--bd:#26323f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--tx:#e8eef4;--mu:#8fa0b1;--ac:#5aa0f5;--ok:#3cc088;--wr:#eba04f;--er:#f06b6b;--bd:#26323f;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
+.mu{color:var(--mu);font-size:13px}
+button,input{font:inherit}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;width:100%}
+.btn.s{background:transparent;color:var(--mu);border:1px solid var(--bd);width:auto;padding:6px 12px}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin:4px 0 10px}
+#login{max-width:360px;margin:12vh auto 0}
+#app{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+.tab{flex:0 0 auto;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 12px;cursor:pointer;text-align:left}
+.tab.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset}
+.tab b{display:block;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.v{font-size:26px;font-weight:700}
+.u{font-size:13px;color:var(--mu);font-weight:400}
+.bar{height:10px;background:var(--bd);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .6s}
+.bar.d i{background:var(--ac)}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:12px}
+svg{width:100%;height:120px;display:block}
+.al{display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--bd);font-size:13px}
+.al:first-of-type{border-top:0}
+.dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:0 0 8px}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:420px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--bd);text-align:left}
+th{color:var(--mu);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:var(--bd)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="login" class="card">
+  <h1>Healing Pod</h1>
+  <p class="mu">Dashboard pemantauan Bio-Stimulation Healing Pod. Ini versi demo dengan data simulasi.</p>
+  <label class="mu">Email</label><input id="em" value="dokter.demo@rs-contoh.id">
+  <label class="mu">Kata sandi</label><input id="pw" type="password" value="demo1234">
+  <button class="btn" id="go">Masuk</button>
+</div>
+
+<div id="app">
+  <div class="top">
+    <div><h1>Pemantauan Kapsul</h1><div class="mu">Masuk sebagai dr. Demo · data simulasi</div></div>
+    <button class="btn s" id="out">Keluar</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="grid">
+    <div class="card"><div class="mu">Detak jantung</div><div class="v"><span id="hr">-</span> <span class="u">bpm</span></div></div>
+    <div class="card"><div class="mu">Suhu tubuh</div><div class="v"><span id="tp">-</span> <span class="u">°C</span></div></div>
+    <div class="card"><div class="mu">Dosis stimulasi (diatur AI)</div><div class="v"><span id="ds">-</span> <span class="u">%</span></div><div class="bar d"><i id="dsb"></i></div></div>
+    <div class="card"><div class="mu">Pemulihan jaringan</div><div class="v"><span id="rc">-</span> <span class="u">%</span></div><div class="bar"><i id="rcb"></i></div></div>
+  </div>
+
+  <div class="row2">
+    <div class="card"><h2>Detak jantung real-time</h2><svg id="ch" viewBox="0 0 300 120" preserveAspectRatio="none"></svg><div class="mu" id="st">Status: stabil</div></div>
+    <div class="card"><h2>Notifikasi</h2><div id="al"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Riwayat sesi pemulihan <span class="mu">(tersimpan di cloud)</span></h2>
+    <div class="sc"><table><thead><tr><th>Sesi</th><th>Tanggal</th><th>Durasi</th><th>Rata-rata dosis</th><th>Pemulihan</th></tr></thead><tbody id="hs"></tbody></table></div>
+  </div>
+</div>
+</div>
+
+<script>
+var P=[
+{n:"Budi",k:"Patah tulang",hr:76,tp:36.7,ds:55,rc:42,h:[["1","20 Nov","60 mnt",48,30],["2","22 Nov","60 mnt",52,36],["3","24 Nov","75 mnt",54,42]]},
+{n:"Sari",k:"Luka bakar",hr:88,tp:37.1,ds:40,rc:28,h:[["1","21 Nov","45 mnt",35,18],["2","23 Nov","60 mnt",38,23],["3","25 Nov","60 mnt",40,28]]},
+{n:"Rafi",k:"Cedera otot",hr:72,tp:36.6,ds:62,rc:67,h:[["1","18 Nov","60 mnt",50,45],["2","21 Nov","60 mnt",58,58],["3","24 Nov","60 mnt",62,67]]}
+];
+var cur=0,hist=[],alerts=[];
+P.forEach(function(p){p.line=[];for(var i=0;i<40;i++)p.line.push(p.hr+Math.random()*4-2)});
+function $(i){return document.getElementById(i)}
+function tabs(){
+  $("tabs").innerHTML="";
+  P.forEach(function(p,i){
+    var b=document.createElement("button");b.className="tab"+(i===cur?" on":"");
+    b.innerHTML="<b>"+p.n+"</b><span class=\"mu\">"+p.k+"</span>";
+    b.onclick=function(){cur=i;tabs();hs();draw()};
+    $("tabs").appendChild(b);
+  });
+}
+function hs(){
+  var p=P[cur];$("hs").innerHTML=p.h.map(function(r){return "<tr><td>"+r[0]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td><td>"+r[3]+"%</td><td>"+r[4]+"%</td></tr>"}).join("");
+}
+function addAlert(t,c){
+  var d=new Date(),m=("0"+d.getMinutes()).slice(-2),s=("0"+d.getSeconds()).slice(-2);
+  alerts.unshift({t:t,c:c,w:d.getHours()+":"+m+":"+s});alerts=alerts.slice(0,5);
+}
+function draw(){
+  var p=P[cur];
+  $("hr").textContent=Math.round(p.hr);$("tp").textContent=p.tp.toFixed(1);
+  $("ds").textContent=Math.round(p.ds);$("dsb").style.width=p.ds+"%";
+  $("rc").textContent=p.rc.toFixed(1);$("rcb").style.width=p.rc+"%";
+  var pts=p.line.map(function(v,i){return (i*300/39).toFixed(1)+","+(110-(v-50)*1.1).toFixed(1)}).join(" ");
+  $("ch").innerHTML="<polyline points=\""+pts+"\" fill=\"none\" stroke=\"var(--ac)\" stroke-width=\"2\"/>";
+  var warn=p.hr>105||p.tp>37.8;
+  $("st").textContent=warn?"Status: perlu perhatian, AI menurunkan dosis":"Status: stabil";
+  $("st").style.color=warn?"var(--er)":"var(--mu)";
+  $("al").innerHTML=alerts.length?alerts.map(function(a){return "<div class=\"al\"><span class=\"dot\" style=\"background:var(--"+a.c+")\"></span><div>"+a.t+"<div class=\"mu\">"+a.w+"</div></div></div>"}).join(""):"<div class=\"mu\">Belum ada notifikasi.</div>";
+}
+function tick(){
+  P.forEach(function(p,i){
+    p.hr+=(Math.random()-0.5)*4;
+    p.hr=Math.max(60,Math.min(118,p.hr+(80-p.hr)*0.05));
+    p.tp=Math.max(36.3,Math.min(38.2,p.tp+(Math.random()-0.5)*0.08+(36.8-p.tp)*0.03));
+    p.rc=Math.min(100,p.rc+0.02);
+    p.line.push(p.hr);p.line.shift();
+    if(p.hr>105||p.tp>37.8){
+      p.ds=Math.max(15,p.ds-1.5);
+      if(Math.random()<0.2)addAlert(p.n+": data di atas batas, AI menurunkan dosis stimulasi.","er");
+    }else{
+      p.ds=Math.min(70,p.ds+0.3);
+    }
+  });
+  if(Math.random()<0.04){var r=P[Math.floor(Math.random()*P.length)];r.hr+=22;addAlert(r.n+": lonjakan detak jantung terdeteksi.","wr")}
+  if(Math.random()<0.03)addAlert("Data "+P[cur].n+" tersinkron ke cloud.","ok");
+  draw();
+}
+var timer=null;
+$("go").onclick=function(){
+  $("login").style.display="none";$("app").style.display="block";
+  tabs();hs();draw();timer=setInterval(tick,1000);
+};
+$("out").onclick=function(){
+  clearInterval(timer);$("app").style.display="none";$("login").style.display="block";
+};
+</script>
+</body>
+</html>
